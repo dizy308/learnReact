@@ -1,11 +1,9 @@
-import Calendar from './Components/header'
-import Test from './Components/test'
+import Calendar from './Components/intraday'
 
 function App() {
   return (
     <>
-      {/* <Calendar/> */}
-      <Test/>
+      <Calendar/>
     </>
   )
 }
