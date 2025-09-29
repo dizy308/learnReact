@@ -10,12 +10,12 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState('2025-08-01')
   const [formattedDate, setFormattedDate] = useState(selectedDate)
   
-  const startTime = 6
-  const endTime = 23
+  const startCalendar = 6
+  const endCalendar = 23
   const courtCount = 5
   const timeSlots = [];
   
-  for (let hour = startTime; hour < endTime; hour++) {
+  for (let hour = startCalendar; hour < endCalendar; hour++) {
     timeSlots.push(`${String(hour).padStart(2,'0')} - ${String(hour + 1).padStart(2,'0')}`);
   }
   const handleDateChange = (date) => {
@@ -41,7 +41,7 @@ const Calendar = () => {
                 <div className="time-interval" key={`time-${item}`}>{item}</div>
               ))}
             </div>
-            <CourtBlock selectedDate={formattedDate} courtCount={courtCount} timeSlots={timeSlots} />
+            <CourtBlock selectedDate={formattedDate} courtCount={courtCount} timeSlots={timeSlots} startCalendar={startCalendar} endCalendar={endCalendar}/>
         </div>
       </div>
     </div>
