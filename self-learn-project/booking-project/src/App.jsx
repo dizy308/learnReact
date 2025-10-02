@@ -1,4 +1,4 @@
-import Calendar from './Components/CalenadarFrame'
+import Calendar from './Components/CalendarFrame'
 
 function App() {
   return (
