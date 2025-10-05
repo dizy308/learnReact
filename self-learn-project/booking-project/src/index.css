@@ -110,6 +110,21 @@ html {
    
 }
 
+/* Fix for react-datepicker z-index */
+.react-datepicker {
+  z-index: 9999 !important;
+}
+
+.react-datepicker__triangle {
+  z-index: 10000 !important;
+}
+
+.react-datepicker-popper {
+  z-index: 9998 !important;
+}
+
+
+
 
 .container-popup{
     width: 100%;

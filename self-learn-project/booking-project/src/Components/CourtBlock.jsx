@@ -2,7 +2,7 @@ import { useState, useEffect, useRef} from 'react';
 import Loading from './Loading';
 
 
-const CourtBlock = ({selectedDate, calendarConfig, openPopup, refreshTrigger}) => {
+const CourtBlock = ({selectedDate, calendarConfig, openPopup, selectedFreeSlots, setSelectedFreeSlots, refreshTrigger}) => {
 
     const {courtCount, timeSlots, startCalendar, endCalendar} = calendarConfig
     const [data, setData] = useState(null);
@@ -10,6 +10,16 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, refreshTrigger}) =
     const hourContainerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 0, left: 0 })
 
+    const handleFreeSlotClick = (courtId, startFree, endFree) =>{
+      const slotId = `${courtId}-${startFree}-${endFree}`;
+        setSelectedFreeSlots(prev => {
+          if (prev.includes(slotId)) {
+            return prev.filter(id => id !== slotId)
+          } else {
+            return [...prev, slotId]
+          }
+        });
+    }
 
     useEffect(() => {
       const fetchData = async () => {
@@ -26,8 +36,9 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, refreshTrigger}) =
       } 
 
     };
-      fetchData()}
-    , [selectedDate, refreshTrigger]);
+
+
+      fetchData()}, [selectedDate, refreshTrigger]);
 
     useEffect(() => {
       if (!isLoading && hourContainerRef.current) {
@@ -36,13 +47,6 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, refreshTrigger}) =
         setDimensions({ width, left })
       }
     }, [isLoading, refreshTrigger])
-
-    function convertToTime(inputTime){
-      const hour = parseInt(inputTime);
-      const minute = Math.round((inputTime % 1) * 60 ) ;
-      
-      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-    }
 
 
 
@@ -83,13 +87,13 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, refreshTrigger}) =
                     left: `${startWidth}px`,
                     width: `${currentDurationLength}px`,
                     backgroundColor: "#00cf77",
-                    };
+                    }
                   const handleBookingClick = () => {
                     const {start_time, end_time, ...rest} = booked
                     const newData = {court:i+1, booking_date:selectedDate, start_time:convertToTime(start_time), end_time:convertToTime(end_time) , ...rest}
                     console.log(newData)
                     openPopup(newData);
-                  };  
+                  } 
                   
                   return (
                     <div className={`duration-sub-block ${start_time}-${end_time}`} 
@@ -103,6 +107,8 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, refreshTrigger}) =
                 {/* Free Slots */}
                 {freeSlots.map((free_slot)=>{
                   const [start_free, end_free] = free_slot
+                  const uniq_value = `${i+1}-${start_free}-${end_free}`;
+                  const checkedSlot = selectedFreeSlots.includes(uniq_value)
 
                   const pxPerDuration = dimensions.width / (60 * (endCalendar - startCalendar))
                   const startWidth = (start_free - startCalendar) * 60 * pxPerDuration  + dimensions.left
@@ -112,10 +118,9 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, refreshTrigger}) =
                   const divStyle = {
                     left: `${startWidth}px`,
                     width: `${currentDurationLength}px`,
-                    };
-
-                  
-                  return <div className={`duration-sub-block-empty ${start_free}-${end_free}`} key={`free-slot ${start_free}-{end_free}`} style={divStyle} ></div>
+                    }                
+                  return <div className={`duration-sub-block-empty ${start_free}-${end_free} ${checkedSlot?"selected-slot":""}`} 
+                            key={`free-slot ${start_free}-{end_free}`} style={divStyle} onClick={()=>handleFreeSlotClick(i+1, start_free, end_free)}></div>
                 
                 })}
                 </div>
@@ -128,3 +133,38 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, refreshTrigger}) =
     );
 }
 export default CourtBlock
+
+
+
+
+
+// Utility functions moved outside component
+function convertToTime(inputTime) {
+  const hour = parseInt(inputTime);
+  const minute = Math.round((inputTime % 1) * 60);
+  
+  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+}
+
+function mergeAdjacentTimeSlots(timeSlots) {
+  const sortedTimeSlots = timeSlots.sort((a, b) => a.start_time - b.start_time);
+  return sortedTimeSlots.reduce((accumulator, currentValue) => {
+    const previousValue = accumulator[accumulator.length - 1];
+      
+    if (previousValue !== undefined && previousValue.end_time === currentValue.start_time) {
+      const mergedSlot = {
+        start_time: previousValue.start_time,
+        end_time: currentValue.end_time,
+        court_id: currentValue.court_id
+      };
+      accumulator.pop();
+      return accumulator.concat(mergedSlot);
+    } else {
+      return accumulator.concat({
+        start_time: currentValue.start_time,
+        end_time: currentValue.end_time,
+        court_id: currentValue.court_id
+      });
+    }
+  }, []);
+}

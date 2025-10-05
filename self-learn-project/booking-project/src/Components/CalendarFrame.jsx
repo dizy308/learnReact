@@ -1,20 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Datepicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'
 import { format } from 'date-fns';
 import CourtBlock from './CourtBlock';
-import PopupBox from './PopupBox';
-
-
-
+import UpdatePopupBox from './UpdatePopupBox';
+import ConfirmButton from './ConfirmButton';
 
 const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState('2025-08-01')
   const [formattedDate, setFormattedDate] = useState(selectedDate)
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [popupData, setPopupData] = useState(null)
+
+  const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false)
+  const [selectedFreeSlots, setSelectedFreeSlots] = useState([])
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
+  useEffect(()=>{
+      setSelectedFreeSlots([])
+  }, [selectedDate, setSelectedFreeSlots])
 
   const openPopup = (bookedSlotData) => {
     setPopupData(bookedSlotData)
@@ -25,6 +29,9 @@ const Calendar = () => {
     setIsPopupOpen(false);
     setPopupData(null)
   };
+  // Create State here
+
+
   
   const refreshBookings = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -62,6 +69,8 @@ const Calendar = () => {
             <div id='date-filter'>
               <Datepicker selected={formattedDate} onChange={handleDateChange} dateFormat="YYYY-MM-dd" id="date-picker" name="datePicker"/>
             </div>
+            <ConfirmButton selectedFreeSlots={selectedFreeSlots} />
+            
           </div>
             <div className="court-block" key="header">
               <div className="court-number">COURT NUMBER</div>
@@ -69,11 +78,15 @@ const Calendar = () => {
                 <div className="time-interval" key={`time-${item}`}>{item}</div>
               ))}
             </div>
-            <CourtBlock selectedDate={formattedDate} calendarConfig={calendarConfig} openPopup={openPopup} refreshTrigger={refreshTrigger} />
+            <CourtBlock selectedDate={formattedDate} calendarConfig={calendarConfig} 
+              openPopup={openPopup} refreshTrigger={refreshTrigger} 
+              selectedFreeSlots={selectedFreeSlots}
+              setSelectedFreeSlots={setSelectedFreeSlots}
+            />
             
         </div>
       </div>
-      <PopupBox isPopupOpen={isPopupOpen} closePopup={closePopup} bookedSlotData={popupData} refreshBookings={refreshBookings}/>
+      <UpdatePopupBox isPopupOpen={isPopupOpen} closePopup={closePopup} bookedSlotData={popupData} refreshBookings={refreshBookings}/>
     </div>
   )
 }
