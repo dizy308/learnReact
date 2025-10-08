@@ -10,16 +10,42 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, selectedFreeSlots,
     const hourContainerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 0, left: 0 })
 
-    const handleFreeSlotClick = (courtId, startFree, endFree) =>{
-      const slotId = `${courtId}-${startFree}-${endFree}`;
-        setSelectedFreeSlots(prev => {
-          if (prev.includes(slotId)) {
-            return prev.filter(id => id !== slotId)
-          } else {
-            return [...prev, slotId]
-          }
-        });
-    }
+    const handleFreeSlotClick = (courtId, startFree, endFree) => {
+      const slotData = {
+        courtId: parseInt(courtId),
+        startFree, 
+        endFree
+      };
+      
+      setSelectedFreeSlots(prev => {
+        // Check if slot exists by comparing all properties
+        const exists = prev.some(slot => 
+          slot.courtId === slotData.courtId &&
+          slot.startFree === slotData.startFree &&
+          slot.endFree === slotData.endFree
+        );
+        
+        if (exists) {
+          return prev.filter(slot => 
+            !(slot.courtId === slotData.courtId &&
+              slot.startFree === slotData.startFree &&
+              slot.endFree === slotData.endFree)
+          );
+        } else {
+          return [...prev, slotData];
+        }
+      });
+    };
+
+    // CHECK IF SELECTED
+    const isSlotSelected = (courtId, startFree, endFree) => {
+      return selectedFreeSlots.some(slot => 
+        slot.courtId === courtId &&
+        slot.startFree === startFree &&
+        slot.endFree === endFree
+      );
+    };
+
 
     useEffect(() => {
       const fetchData = async () => {
@@ -61,8 +87,6 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, selectedFreeSlots,
           const courtData = data.find(court => court.court_id === i + 1);
           const bookedSlots = courtData ? courtData.booked_slot : [];
           const freeSlots = courtData ? courtData.free_slot : [];
-          
-
           
           return (
             <div className="court-block" id={`court_num_${i+1}`} key={`court-${i+1}`}>
@@ -107,8 +131,7 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, selectedFreeSlots,
                 {/* Free Slots */}
                 {freeSlots.map((free_slot)=>{
                   const [start_free, end_free] = free_slot
-                  const uniq_value = `${i+1}-${start_free}-${end_free}`;
-                  const checkedSlot = selectedFreeSlots.includes(uniq_value)
+                  const checkedSlot = isSlotSelected(i+1, start_free, end_free)
 
                   const pxPerDuration = dimensions.width / (60 * (endCalendar - startCalendar))
                   const startWidth = (start_free - startCalendar) * 60 * pxPerDuration  + dimensions.left
@@ -146,25 +169,4 @@ function convertToTime(inputTime) {
   return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
 }
 
-function mergeAdjacentTimeSlots(timeSlots) {
-  const sortedTimeSlots = timeSlots.sort((a, b) => a.start_time - b.start_time);
-  return sortedTimeSlots.reduce((accumulator, currentValue) => {
-    const previousValue = accumulator[accumulator.length - 1];
-      
-    if (previousValue !== undefined && previousValue.end_time === currentValue.start_time) {
-      const mergedSlot = {
-        start_time: previousValue.start_time,
-        end_time: currentValue.end_time,
-        court_id: currentValue.court_id
-      };
-      accumulator.pop();
-      return accumulator.concat(mergedSlot);
-    } else {
-      return accumulator.concat({
-        start_time: currentValue.start_time,
-        end_time: currentValue.end_time,
-        court_id: currentValue.court_id
-      });
-    }
-  }, []);
-}
+

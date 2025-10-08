@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import CourtBlock from './CourtBlock';
 import UpdatePopupBox from './UpdatePopupBox';
 import ConfirmButton from './ConfirmButton';
+import CreatePopupBox from './CreatePopupBox';
 
 const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState('2025-08-01')
@@ -29,8 +30,15 @@ const Calendar = () => {
     setIsPopupOpen(false);
     setPopupData(null)
   };
-  // Create State here
-
+  
+  const openCreatePopup = () =>{
+    setIsCreatePopupOpen(true)
+  }
+  
+  const closeCreatePopup = () => {
+    setIsCreatePopupOpen(false)
+    
+  };
 
   
   const refreshBookings = () => {
@@ -69,7 +77,7 @@ const Calendar = () => {
             <div id='date-filter'>
               <Datepicker selected={formattedDate} onChange={handleDateChange} dateFormat="YYYY-MM-dd" id="date-picker" name="datePicker"/>
             </div>
-            <ConfirmButton selectedFreeSlots={selectedFreeSlots} />
+            <ConfirmButton openCreatePopup={openCreatePopup} />
             
           </div>
             <div className="court-block" key="header">
@@ -87,6 +95,7 @@ const Calendar = () => {
         </div>
       </div>
       <UpdatePopupBox isPopupOpen={isPopupOpen} closePopup={closePopup} bookedSlotData={popupData} refreshBookings={refreshBookings}/>
+      <CreatePopupBox isCreatePopupOpen={isCreatePopupOpen} closeCreatePopup = {closeCreatePopup} refreshBookings={refreshBookings} selectedFreeSlots={selectedFreeSlots} />
     </div>
   )
 }

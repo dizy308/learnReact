@@ -1,6 +1,6 @@
-const ConfirmButton = ({selectedFreeSlots}) => {
+const ConfirmButton = ({openCreatePopup}) => {
   const handleConfirmButton = () =>{
-    console.log(selectedFreeSlots)
+    openCreatePopup()
   }
   return (
     <button id="confirm-booking" onClick={handleConfirmButton}>CONFIRM SCHEDULE</button>
