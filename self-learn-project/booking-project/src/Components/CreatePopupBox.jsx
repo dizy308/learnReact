@@ -1,17 +1,50 @@
 import { useState } from "react";
+import { convertToTime, mergeAdjacentTimeSlots } from "../Utils/timeUtils";
 
-const CreatePopupBox = ({isCreatePopupOpen, closeCreatePopup, selectedFreeSlots}) => {
+const CreatePopupBox = ({selectedDate, isCreatePopupOpen, closeCreatePopup, selectedFreeSlots, refreshBookings}) => {
   const [inputValue, setInputValue] = useState('');
-  
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
 
-const sendInput = () => {
-  console.log('selectedFreeSlots:', selectedFreeSlots);
-  console.log('Merged:', mergeAdjacentTimeSlots(selectedFreeSlots));
-}
+  const sendInput = async () => {
+    const mergedSlots = mergeAdjacentTimeSlots(selectedFreeSlots);
+    const postData = mergedSlots.map((item) => ({
+      court: item.courtId,
+      start_time: convertToTime(item.startFree),
+      end_time: convertToTime(item.endFree),
+      booking_date: selectedDate,
+      customer_num: inputValue.trim() || "STAFF"
+    }));
+
+    try {
+      const bookingPromises = postData.map(item => 
+        fetch('http://127.0.0.1:8000/apipolls/booking/intradaybooking', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(item)
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+      );
+
+      await Promise.all(bookingPromises);
+      
+      alert('Successfully booked all bookings');
+      closeCreatePopup();
+      
+    } catch (error) {
+      console.error('Booking failed:', error);
+      alert('Some bookings failed. Please try again.');
+    }
+    finally{
+      refreshBookings()
+    }
+  };
 
   return (isCreatePopupOpen && 
     <div className="popup-box-booking open-popup">
@@ -34,22 +67,3 @@ const sendInput = () => {
 
 export default CreatePopupBox
 
-
-
-function mergeAdjacentTimeSlots(timeSlots) {
-  if (timeSlots.length === 0) return [];
-  
-  return [...timeSlots]
-    .sort((a, b) => a.courtId - b.courtId || a.startFree - b.startFree)
-    .reduce((merged, slot) => {
-      const lastSlot = merged[merged.length - 1];
-      
-      const canMerge = lastSlot && 
-        lastSlot.courtId === slot.courtId && 
-        lastSlot.endFree === slot.startFree;
-      
-      return canMerge
-        ? [...merged.slice(0, -1), { ...lastSlot, endFree: slot.endFree }]
-        : [...merged, { ...slot }];
-    }, []);
-}

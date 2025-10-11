@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef} from 'react';
 import Loading from './Loading';
-
+import { convertToTime } from '../Utils/timeUtils';
 
 const CourtBlock = ({selectedDate, calendarConfig, openPopup, selectedFreeSlots, setSelectedFreeSlots, refreshTrigger}) => {
 
@@ -156,17 +156,5 @@ const CourtBlock = ({selectedDate, calendarConfig, openPopup, selectedFreeSlots,
     );
 }
 export default CourtBlock
-
-
-
-
-
-// Utility functions moved outside component
-function convertToTime(inputTime) {
-  const hour = parseInt(inputTime);
-  const minute = Math.round((inputTime % 1) * 60);
-  
-  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-}
 
 

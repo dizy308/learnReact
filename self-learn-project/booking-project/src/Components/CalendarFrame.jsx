@@ -8,7 +8,7 @@ import ConfirmButton from './ConfirmButton';
 import CreatePopupBox from './CreatePopupBox';
 
 const Calendar = () => {
-  const [selectedDate, setSelectedDate] = useState('2025-08-01')
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [formattedDate, setFormattedDate] = useState(selectedDate)
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [popupData, setPopupData] = useState(null)
@@ -37,6 +37,7 @@ const Calendar = () => {
   
   const closeCreatePopup = () => {
     setIsCreatePopupOpen(false)
+    setSelectedFreeSlots([])
     
   };
 
@@ -94,8 +95,13 @@ const Calendar = () => {
             
         </div>
       </div>
-      <UpdatePopupBox isPopupOpen={isPopupOpen} closePopup={closePopup} bookedSlotData={popupData} refreshBookings={refreshBookings}/>
-      <CreatePopupBox isCreatePopupOpen={isCreatePopupOpen} closeCreatePopup = {closeCreatePopup} refreshBookings={refreshBookings} selectedFreeSlots={selectedFreeSlots} />
+      <UpdatePopupBox isPopupOpen={isPopupOpen} closePopup={closePopup} 
+                      bookedSlotData={popupData} refreshBookings={refreshBookings}/>
+                      
+      <CreatePopupBox isCreatePopupOpen={isCreatePopupOpen} closeCreatePopup = {closeCreatePopup} 
+                      refreshBookings={refreshBookings} selectedFreeSlots={selectedFreeSlots} 
+                      selectedDate={selectedDate}
+      />
     </div>
   )
 }
